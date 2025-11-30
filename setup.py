@@ -5,7 +5,7 @@ from setuptools import find_packages, setup
 import os
 
 REQUIRES_PYTHON = '>=3.6.0'
-VERSION = '1.1.0'
+VERSION = '1.1.1'
 DESCRIPTION="A free and unlimited python tool."
 NAME = "anakin"
 
@@ -40,6 +40,14 @@ setup(
     url='https://github.com/z10mx7/anakin',
     include_package_data=True,
     license='MIT',
+    install_requires=[
+        'lorem',
+        'croniter',
+        'PyYAML',
+        'PyJWT',
+        'colorama',
+        'Pillow',  # For image compression (optional feature)
+    ],
     classifiers=[
         'Development Status :: 5 - Production/Stable',
         'License :: OSI Approved :: MIT License',
@@ -59,7 +67,7 @@ setup(
     ],
     entry_points={
         'console_scripts': [
-            'anakin=test:main',
+            'anakin=anakin.cli:main',
         ],
     },
 )
