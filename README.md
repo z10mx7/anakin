@@ -34,6 +34,7 @@ anakin add nv
 - LazyVim installation
 - Various utility commands (base64, hash, uuid, etc.)
 
+```
 ~/code
 ├── work/                 # Your 2 Employer Companies
 │   ├── company-a/        # Employment 1
@@ -63,7 +64,7 @@ anakin add nv
 └── dotfiles/   # dotfiles for my system
 └── playground/              # (or playground) Throwaway code, quick tests, tmp files
     └── test-nginx/
-
+```
 ## License
 
 MIT
