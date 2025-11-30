@@ -36,7 +36,7 @@ anakin add nv
 
 ```
 ~/code
-├── work/                 # Your 2 Employer Companies
+├── work/                 # Your Employer Companies
 │   ├── company-a/        # Employment 1
 │   │   ├── mobile-app/   # (Flutter/RN)
 │   │   └── backend-api/  # (Go/FastAPI)
