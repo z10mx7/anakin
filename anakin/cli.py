@@ -23,14 +23,14 @@ init(autoreset=True)
 
 def anakin_logo():
     logo = r"""
-  ______          _______              _
- |  ____|   /\   |__   __|            (_)
- | |__     /  \     | |_ __ __ _ _ __  _ _ __   __ _
- |  __|   / /\ \    | | '__/ _` | '_ \| | '_ \ / _` |
- | |____ / ____ \   | | | | (_| | | | | | | | | (_| |
- |______/_/    \_\  |_|_|  \__,_|_| |_|_|_| |_|\__, |
-                                               __/ |
-                                              |___/
+
+   _               _    _
+  /_\  _ __   __ _| | _(_)_ __
+ //_\\| '_ \ / _` | |/ / | '_ \
+/  _  \ | | | (_| |   <| | | | |
+\_/ \_/_| |_|\__,_|_|\_\_|_| |_|
+
+
     """
     print(Fore.GREEN + logo)
 
@@ -569,8 +569,8 @@ def main():
 
     # Text Comparer
     compare_group = parser.add_argument_group("Text Comparer")
-    compare_group.add_argument("-s", "--string", nargs=2, metavar=("string1", "string2"), help="Compare two strings")
-    compare_group.add_argument("-f", "--file", nargs=2, metavar=("file1", "file2"), help="Compare two text files")
+    compare_group.add_argument("--string", nargs=2, metavar=("string1", "string2"), help="Compare two strings")
+    compare_group.add_argument("--file", nargs=2, metavar=("file1", "file2"), help="Compare two text files")
 
     # Text Escape / Unescape
     escape_group = parser.add_argument_group("Text Escape / Unescape")

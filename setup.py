@@ -5,7 +5,7 @@ from setuptools import find_packages, setup
 import os
 
 REQUIRES_PYTHON = '>=3.6.0'
-VERSION = '1.1.1'
+VERSION = '1.1.2'
 DESCRIPTION="A free and unlimited python tool."
 NAME = "anakin"
 
