@@ -179,10 +179,13 @@ def number_base_converter(number, from_base, to_base):
     except ValueError:
         return "Invalid input."
 
-def init_directory_structure():
-    """Create the standard directory structure in ~/code/"""
-    home_dir = os.path.expanduser("~")
-    code_dir = os.path.join(home_dir, "code")
+def init_directory_structure(base_dir=None):
+    """Create the standard directory structure in ~/code/ or current directory if base_dir is provided"""
+    if base_dir is None:
+        home_dir = os.path.expanduser("~")
+        code_dir = os.path.join(home_dir, "code")
+    else:
+        code_dir = os.path.abspath(base_dir)
 
     # Define the directory structure
     structure = {
@@ -242,8 +245,8 @@ def init_directory_structure():
                         except OSError as e:
                             print(f"Error creating {subdir_path}: {e}")
 
-    # Create the base code directory if it doesn't exist
-    if not os.path.exists(code_dir):
+    # Create the base code directory if it doesn't exist (only for ~/code/, not for --here)
+    if base_dir is None and not os.path.exists(code_dir):
         os.makedirs(code_dir, exist_ok=True)
         created_dirs.append(code_dir)
 
@@ -350,9 +353,17 @@ def main():
 
     # Check if "init" is the first argument (after script name)
     if len(sys.argv) > 1 and sys.argv[1] == "init":
-        # Handle init command
+        # Handle init command with argparse for --here flag
+        parser = argparse.ArgumentParser(description="Anakin Init - Initialize directory structure", formatter_class=argparse.RawTextHelpFormatter)
+        parser.add_argument("init", help="Initialize directory structure")
+        parser.add_argument("--here", action="store_true", help="Create directories in current directory instead of ~/code/")
+        args = parser.parse_args()
+
         anakin_logo()
-        init_directory_structure()
+        if args.here:
+            init_directory_structure(base_dir=".")
+        else:
+            init_directory_structure()
         return
 
     # Legacy command handling - use the original parser
