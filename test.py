@@ -21,14 +21,14 @@ init(autoreset=True)
 
 def anakin_logo():
     logo = r"""
-  ______          _______              _             
- |  ____|   /\   |__   __|            (_)            
- | |__     /  \     | |_ __ __ _ _ __  _ _ __   __ _ 
+  ______          _______              _
+ |  ____|   /\   |__   __|            (_)
+ | |__     /  \     | |_ __ __ _ _ __  _ _ __   __ _
  |  __|   / /\ \    | | '__/ _` | '_ \| | '_ \ / _` |
  | |____ / ____ \   | | | | (_| | | | | | | | | (_| |
  |______/_/    \_\  |_|_|  \__,_|_| |_|_|_| |_|\__, |
                                                __/ |
-                                              |___/ 
+                                              |___/
     """
     print(Fore.GREEN + logo)
 
@@ -179,103 +179,92 @@ def number_base_converter(number, from_base, to_base):
     except ValueError:
         return "Invalid input."
 
-def main():
-    parser = argparse.ArgumentParser(description="Anakin Command Line Utility", formatter_class=argparse.RawTextHelpFormatter)
+def init_directory_structure():
+    """Create the standard directory structure in ~/code/"""
+    home_dir = os.path.expanduser("~")
+    code_dir = os.path.join(home_dir, "code")
 
-    # Anakin logo
-    anakin_logo()
+    # Define the directory structure
+    structure = {
+        "work": {
+            "company-a": ["mobile-app", "backend-api"],
+            "company-b": ["infra-k8s", "web-portal"]
+        },
+        "clients": {
+            "client-x": ["pos-system"],
+            "client-y": ["automation"]
+        },
+        "personal": ["portfolio", "learn-rust", "cv"],
+        "freelance": {},
+        "oss": {},
+        "shared": {
+            "infra": {},
+            "scripts": {},
+            "templates": {},
+            "dotfiles": {}
+        },
+        "archive": {},
+        "playground": {
+            "test-nginx": {}
+        }
+    }
 
-    # Base64 Text Encoder/Decoder
-    base64_group = parser.add_argument_group("Base64 Text Encoder/Decoder")
-    base64_group.add_argument("base64", choices=["-e", "-d"], help="Base64 encode (-e) or decode (-d) a string")
-    base64_group.add_argument("string", help="The string to encode/decode")
+    created_dirs = []
+    skipped_dirs = []
 
-    # Base64 Image Encoder/Decoder
-    image64_group = parser.add_argument_group("Base64 Image Encoder/Decoder")
-    image64_group.add_argument("image64", choices=["-e", "-d"], help="Base64 encode (-e) or decode (-d) an image")
-    image64_group.add_argument("image_string", help="The image string to encode/decode")
+    def create_dirs(base_path, dir_structure):
+        """Recursively create directories from structure"""
+        for dir_name, subdirs in dir_structure.items():
+            dir_path = os.path.join(base_path, dir_name)
 
-    # GZip Encoder/Decoder
-    gzip_group = parser.add_argument_group("GZip Encoder/Decoder")
-    gzip_group.add_argument("gzip", choices=["-e", "-d"], help="GZip compress (-e) or decompress (-d) a string")
-    gzip_group.add_argument("gzip_string", help="The string to compress/decompress")
+            if os.path.exists(dir_path):
+                skipped_dirs.append(dir_path)
+            else:
+                try:
+                    os.makedirs(dir_path, exist_ok=True)
+                    created_dirs.append(dir_path)
+                except OSError as e:
+                    print(f"Error creating {dir_path}: {e}")
+                    continue
 
-    # Hash Generator
-    hash_group = parser.add_argument_group("Hash Generator")
-    hash_group.add_argument("hash", choices=["md5", "sha1", "sha256"], help="The hashing algorithm (md5, sha1, sha256)")
-    hash_group.add_argument("hash_string", help="The string to hash")
+            # If subdirs is a dict, recurse; if it's a list, create those dirs
+            if isinstance(subdirs, dict):
+                create_dirs(dir_path, subdirs)
+            elif isinstance(subdirs, list):
+                for subdir in subdirs:
+                    subdir_path = os.path.join(dir_path, subdir)
+                    if os.path.exists(subdir_path):
+                        skipped_dirs.append(subdir_path)
+                    else:
+                        try:
+                            os.makedirs(subdir_path, exist_ok=True)
+                            created_dirs.append(subdir_path)
+                        except OSError as e:
+                            print(f"Error creating {subdir_path}: {e}")
 
-    # UUID Generator
-    parser.add_argument("uuid", action="store_true", help="Generate a UUID")
+    # Create the base code directory if it doesn't exist
+    if not os.path.exists(code_dir):
+        os.makedirs(code_dir, exist_ok=True)
+        created_dirs.append(code_dir)
 
-    # Lorem Ipsum Generator
-    lorem_group = parser.add_argument_group("Lorem Ipsum Generator")
-    lorem_group.add_argument("-w", "--words", type=int, help="Generate Lorem Ipsum with a specific number of words")
-    lorem_group.add_argument("-s", "--sentences", type=int, help="Generate Lorem Ipsum with a specific number of sentences")
-    lorem_group.add_argument("-p", "--paragraphs", type=int, help="Generate Lorem Ipsum with a specific number of paragraphs")
+    # Create the directory structure
+    create_dirs(code_dir, structure)
 
-    # Checksum File
-    parser.add_argument("checksum", metavar="file", help="Calculate the MD5 checksum of a file")
+    # Print results
+    print(Fore.GREEN + f"Directory structure initialized in {code_dir}")
+    if created_dirs:
+        print(Fore.CYAN + f"\nCreated {len(created_dirs)} directories:")
+        for dir_path in created_dirs:
+            print(Fore.CYAN + f"  ✓ {dir_path}")
+    if skipped_dirs:
+        print(Fore.YELLOW + f"\nSkipped {len(skipped_dirs)} existing directories:")
+        for dir_path in skipped_dirs[:10]:  # Show first 10
+            print(Fore.YELLOW + f"  - {dir_path}")
+        if len(skipped_dirs) > 10:
+            print(Fore.YELLOW + f"  ... and {len(skipped_dirs) - 10} more")
 
-    # Cron Parser
-    parser.add_argument("cron", help="Parse and print the next 5 scheduled occurrences of a cron expression")
-
-    # JSON Formatter
-    json_formatter_group = parser.add_argument_group("JSON Formatter")
-    json_formatter_group.add_argument("json", nargs=2, metavar=("input_file", "output_file"), help="Format JSON input_file and save to output_file")
-
-    # JSON/YAML Converter
-    json_yaml_group = parser.add_argument_group("JSON <> YAML Converter")
-    json_yaml_group.add_argument("jy", nargs=2, metavar=("input_file", "output_file"), help="Convert JSON to YAML (input_file to output_file) or vice versa")
-
-    # JWT Decoder
-    parser.add_argument("jwt", nargs="?", help="Decode JWT token")
-
-    # PNG/JPEG Compressor
-    imgcomp_group = parser.add_argument_group("PNG/JPEG Compressor")
-    imgcomp_group.add_argument("img", nargs=2, metavar=("input_file", "output_file"), help="Compress input_file (PNG/JPEG) and save to output_file")
-
-    # Regular Expression Tester
-    regex_group = parser.add_argument_group("Regular Expression Tester")
-    regex_group.add_argument("regex", nargs=2, metavar=("pattern", "text"), help="Test regex pattern against text")
-
-    # Unix Timestamp Converter
-    unix_group = parser.add_argument_group("Unix Timestamp Converter")
-    unix_group.add_argument("unix", choices=["-e", "-d"], help="Convert Unix timestamp to datetime (-e) or vice versa (-d)")
-    unix_group.add_argument("time_string", help="The time string to convert")
-
-    # String Utilities
-    string_group = parser.add_argument_group("String Utilities")
-    string_group.add_argument("string", choices=["-lower", "-upper"], help="Convert string to lowercase (-lower) or uppercase (-upper)")
-    string_group.add_argument("string_value", help="The string to convert")
-
-    # URL Encoder/Decoder
-    url_group = parser.add_argument_group("URL Encoder/Decoder")
-    url_group.add_argument("url", choices=["-e", "-d"], help="URL encode (-e) or decode (-d) a string")
-    url_group.add_argument("url_string", help="The string to encode/decode")
-
-    # HTML Encoder/Decoder
-    html_group = parser.add_argument_group("HTML Encoder/Decoder")
-    html_group.add_argument("html", nargs=2, metavar=("input_file", "output_file"), help="HTML encode input_file and save to output_file")
-
-    # Text Comparer
-    compare_group = parser.add_argument_group("Text Comparer")
-    compare_group.add_argument("-s", "--string", nargs=2, metavar=("string1", "string2"), help="Compare two strings")
-    compare_group.add_argument("-f", "--file", nargs=2, metavar=("file1", "file2"), help="Compare two text files")
-
-    # Text Escape / Unescape
-    escape_group = parser.add_argument_group("Text Escape / Unescape")
-    escape_group.add_argument("escape", choices=["-e", "-d"], help="Text escape (-e) or unescape (-d)")
-    escape_group.add_argument("escape_text", help="The text to escape/unescape")
-
-    # Number Base Converter
-    number_group = parser.add_argument_group("Number Base Converter")
-    number_group.add_argument("number", help="The number to convert")
-    number_group.add_argument("-f", "--from_base", required=True, help="The base of the input number")
-    number_group.add_argument("-t", "--to_base", required=True, help="The base to convert to")
-
-    args = parser.parse_args()
-
+def handle_legacy_commands(args):
+    """Handle all the legacy positional argument commands"""
     if args.base64:
         if args.base64 == "-e":
             print(base64_encode(args.string))
@@ -297,7 +286,7 @@ def main():
     if args.hash:
         print(generate_hash(args.hash_string, args.hash))
 
-    if args.uuid:
+    if args.uuid is not None:
         print(generate_uuid())
 
     if args.words or args.sentences or args.paragraphs:
@@ -309,10 +298,10 @@ def main():
     if args.cron:
         print(parse_cron(args.cron))
 
-    if args.json:
+    if args.json and len(args.json) >= 2:
         print(format_json(args.json[0], args.json[1]))
 
-    if args.jy:
+    if args.jy and len(args.jy) >= 2:
         if args.jy[0].endswith('.json') and args.jy[1].endswith('.yml'):
             print(convert_json_yaml(args.jy[0], args.jy[1]))
         elif args.jy[0].endswith('.yml') and args.jy[1].endswith('.json'):
@@ -323,10 +312,10 @@ def main():
     if args.jwt:
         print(decode_jwt(args.jwt))
 
-    if args.img:
+    if args.img and len(args.img) >= 2:
         print(compress_image(args.img[0], args.img[1]))
 
-    if args.regex:
+    if args.regex and len(args.regex) >= 2:
         print(test_regex(args.regex[0], args.regex[1]))
 
     if args.unix:
@@ -344,11 +333,8 @@ def main():
         elif args.url == "-d":
             print(url_decode(args.url_string))
 
-    if args.html:
+    if args.html and len(args.html) >= 2:
         print(html_encode(args.html[0], args.html[1]))
-
-    if args.string:
-        print(string_utilities(args.string_value, args.string[1:]))
 
     if args.escape:
         if args.escape == "-e":
@@ -356,8 +342,116 @@ def main():
         elif args.escape == "-d":
             print(unescape_text(args.escape_text))
 
-    if args.number:
+    if args.number and args.from_base and args.to_base:
         print(number_base_converter(args.number, args.from_base, args.to_base))
+
+def main():
+    import sys
+
+    # Check if "init" is the first argument (after script name)
+    if len(sys.argv) > 1 and sys.argv[1] == "init":
+        # Handle init command
+        anakin_logo()
+        init_directory_structure()
+        return
+
+    # Legacy command handling - use the original parser
+    parser = argparse.ArgumentParser(description="Anakin Command Line Utility", formatter_class=argparse.RawTextHelpFormatter)
+
+    # Anakin logo
+    anakin_logo()
+
+    # Base64 Text Encoder/Decoder
+    base64_group = parser.add_argument_group("Base64 Text Encoder/Decoder")
+    base64_group.add_argument("base64", nargs='?', choices=["-e", "-d"], help="Base64 encode (-e) or decode (-d) a string")
+    base64_group.add_argument("string", nargs='?', help="The string to encode/decode")
+
+    # Base64 Image Encoder/Decoder
+    image64_group = parser.add_argument_group("Base64 Image Encoder/Decoder")
+    image64_group.add_argument("image64", nargs='?', choices=["-e", "-d"], help="Base64 encode (-e) or decode (-d) an image")
+    image64_group.add_argument("image_string", nargs='?', help="The image string to encode/decode")
+
+    # GZip Encoder/Decoder
+    gzip_group = parser.add_argument_group("GZip Encoder/Decoder")
+    gzip_group.add_argument("gzip", nargs='?', choices=["-e", "-d"], help="GZip compress (-e) or decompress (-d) a string")
+    gzip_group.add_argument("gzip_string", nargs='?', help="The string to compress/decompress")
+
+    # Hash Generator
+    hash_group = parser.add_argument_group("Hash Generator")
+    hash_group.add_argument("hash", nargs='?', choices=["md5", "sha1", "sha256"], help="The hashing algorithm (md5, sha1, sha256)")
+    hash_group.add_argument("hash_string", nargs='?', help="The string to hash")
+
+    # UUID Generator
+    parser.add_argument("uuid", nargs='?', help="Generate a UUID")
+
+    # Lorem Ipsum Generator
+    lorem_group = parser.add_argument_group("Lorem Ipsum Generator")
+    lorem_group.add_argument("-w", "--words", type=int, help="Generate Lorem Ipsum with a specific number of words")
+    lorem_group.add_argument("-s", "--sentences", type=int, help="Generate Lorem Ipsum with a specific number of sentences")
+    lorem_group.add_argument("-p", "--paragraphs", type=int, help="Generate Lorem Ipsum with a specific number of paragraphs")
+
+    # Checksum File
+    parser.add_argument("checksum", nargs='?', metavar="file", help="Calculate the MD5 checksum of a file")
+
+    # Cron Parser
+    parser.add_argument("cron", nargs='?', help="Parse and print the next 5 scheduled occurrences of a cron expression")
+
+    # JSON Formatter
+    json_formatter_group = parser.add_argument_group("JSON Formatter")
+    json_formatter_group.add_argument("json", nargs='*', metavar=("input_file", "output_file"), help="Format JSON input_file and save to output_file")
+
+    # JSON/YAML Converter
+    json_yaml_group = parser.add_argument_group("JSON <> YAML Converter")
+    json_yaml_group.add_argument("jy", nargs='*', metavar=("input_file", "output_file"), help="Convert JSON to YAML (input_file to output_file) or vice versa")
+
+    # JWT Decoder
+    parser.add_argument("jwt", nargs="?", help="Decode JWT token")
+
+    # PNG/JPEG Compressor
+    imgcomp_group = parser.add_argument_group("PNG/JPEG Compressor")
+    imgcomp_group.add_argument("img", nargs='*', metavar=("input_file", "output_file"), help="Compress input_file (PNG/JPEG) and save to output_file")
+
+    # Regular Expression Tester
+    regex_group = parser.add_argument_group("Regular Expression Tester")
+    regex_group.add_argument("regex", nargs='*', metavar=("pattern", "text"), help="Test regex pattern against text")
+
+    # Unix Timestamp Converter
+    unix_group = parser.add_argument_group("Unix Timestamp Converter")
+    unix_group.add_argument("unix", nargs='?', choices=["-e", "-d"], help="Convert Unix timestamp to datetime (-e) or vice versa (-d)")
+    unix_group.add_argument("time_string", nargs='?', help="The time string to convert")
+
+    # String Utilities
+    string_group = parser.add_argument_group("String Utilities")
+    string_group.add_argument("string", nargs='?', choices=["-lower", "-upper"], help="Convert string to lowercase (-lower) or uppercase (-upper)")
+    string_group.add_argument("string_value", nargs='?', help="The string to convert")
+
+    # URL Encoder/Decoder
+    url_group = parser.add_argument_group("URL Encoder/Decoder")
+    url_group.add_argument("url", nargs='?', choices=["-e", "-d"], help="URL encode (-e) or decode (-d) a string")
+    url_group.add_argument("url_string", nargs='?', help="The string to encode/decode")
+
+    # HTML Encoder/Decoder
+    html_group = parser.add_argument_group("HTML Encoder/Decoder")
+    html_group.add_argument("html", nargs='*', metavar=("input_file", "output_file"), help="HTML encode input_file and save to output_file")
+
+    # Text Comparer
+    compare_group = parser.add_argument_group("Text Comparer")
+    compare_group.add_argument("-s", "--string", nargs=2, metavar=("string1", "string2"), help="Compare two strings")
+    compare_group.add_argument("-f", "--file", nargs=2, metavar=("file1", "file2"), help="Compare two text files")
+
+    # Text Escape / Unescape
+    escape_group = parser.add_argument_group("Text Escape / Unescape")
+    escape_group.add_argument("escape", nargs='?', choices=["-e", "-d"], help="Text escape (-e) or unescape (-d)")
+    escape_group.add_argument("escape_text", nargs='?', help="The text to escape/unescape")
+
+    # Number Base Converter
+    number_group = parser.add_argument_group("Number Base Converter")
+    number_group.add_argument("number", nargs='?', help="The number to convert")
+    number_group.add_argument("-f", "--from_base", help="The base of the input number")
+    number_group.add_argument("-t", "--to_base", help="The base to convert to")
+
+    args = parser.parse_args()
+    handle_legacy_commands(args)
 
 if __name__ == "__main__":
     main()

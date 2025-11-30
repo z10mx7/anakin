@@ -56,5 +56,10 @@ setup(
         'Topic :: Software Development :: Libraries :: Python Modules',
         'Topic :: Utilities',
         'Typing :: Typed',
-    ]
+    ],
+    entry_points={
+        'console_scripts': [
+            'anakin=test:main',
+        ],
+    },
 )
