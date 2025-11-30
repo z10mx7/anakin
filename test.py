@@ -14,6 +14,8 @@ import time
 import urllib.parse
 import html
 import difflib
+import subprocess
+import shutil
 from colorama import init, Fore
 
 # Initialize colorama for colored output
@@ -266,6 +268,115 @@ def init_directory_structure(base_dir=None):
         if len(skipped_dirs) > 10:
             print(Fore.YELLOW + f"  ... and {len(skipped_dirs) - 10} more")
 
+def install_lazyvim():
+    """Install LazyVim by backing up existing configs and cloning the starter"""
+    home_dir = os.path.expanduser("~")
+
+    # Paths to backup
+    config_path = os.path.join(home_dir, ".config", "nvim")
+    share_path = os.path.join(home_dir, ".local", "share", "nvim")
+    state_path = os.path.join(home_dir, ".local", "state", "nvim")
+    cache_path = os.path.join(home_dir, ".cache", "nvim")
+
+    print(Fore.GREEN + "Installing LazyVim...")
+    print()
+
+    # Required: Backup ~/.config/nvim
+    if os.path.exists(config_path):
+        backup_path = config_path + ".bak"
+        if os.path.exists(backup_path):
+            print(Fore.YELLOW + f"Backup already exists: {backup_path}")
+            print(Fore.YELLOW + "Skipping backup of ~/.config/nvim")
+        else:
+            try:
+                shutil.move(config_path, backup_path)
+                print(Fore.CYAN + f"✓ Backed up ~/.config/nvim to {backup_path}")
+            except Exception as e:
+                print(Fore.RED + f"Error backing up ~/.config/nvim: {e}")
+                return
+    else:
+        print(Fore.CYAN + "~/.config/nvim does not exist, no backup needed")
+
+    # Optional: Backup ~/.local/share/nvim
+    if os.path.exists(share_path):
+        backup_path = share_path + ".bak"
+        if os.path.exists(backup_path):
+            print(Fore.YELLOW + f"Backup already exists: {backup_path}")
+        else:
+            try:
+                shutil.move(share_path, backup_path)
+                print(Fore.CYAN + f"✓ Backed up ~/.local/share/nvim to {backup_path}")
+            except Exception as e:
+                print(Fore.YELLOW + f"Warning: Could not backup ~/.local/share/nvim: {e}")
+    else:
+        print(Fore.CYAN + "~/.local/share/nvim does not exist, no backup needed")
+
+    # Optional: Backup ~/.local/state/nvim
+    if os.path.exists(state_path):
+        backup_path = state_path + ".bak"
+        if os.path.exists(backup_path):
+            print(Fore.YELLOW + f"Backup already exists: {backup_path}")
+        else:
+            try:
+                shutil.move(state_path, backup_path)
+                print(Fore.CYAN + f"✓ Backed up ~/.local/state/nvim to {backup_path}")
+            except Exception as e:
+                print(Fore.YELLOW + f"Warning: Could not backup ~/.local/state/nvim: {e}")
+    else:
+        print(Fore.CYAN + "~/.local/state/nvim does not exist, no backup needed")
+
+    # Optional: Backup ~/.cache/nvim
+    if os.path.exists(cache_path):
+        backup_path = cache_path + ".bak"
+        if os.path.exists(backup_path):
+            print(Fore.YELLOW + f"Backup already exists: {backup_path}")
+        else:
+            try:
+                shutil.move(cache_path, backup_path)
+                print(Fore.CYAN + f"✓ Backed up ~/.cache/nvim to {backup_path}")
+            except Exception as e:
+                print(Fore.YELLOW + f"Warning: Could not backup ~/.cache/nvim: {e}")
+    else:
+        print(Fore.CYAN + "~/.cache/nvim does not exist, no backup needed")
+
+    print()
+    print(Fore.GREEN + "Cloning LazyVim starter...")
+
+    # Clone the starter
+    try:
+        # Ensure .config directory exists
+        config_dir = os.path.join(home_dir, ".config")
+        os.makedirs(config_dir, exist_ok=True)
+
+        # Clone the repository
+        result = subprocess.run(
+            ["git", "clone", "https://github.com/LazyVim/starter", config_path],
+            capture_output=True,
+            text=True,
+            check=True
+        )
+        print(Fore.CYAN + "✓ Successfully cloned LazyVim starter")
+    except subprocess.CalledProcessError as e:
+        print(Fore.RED + f"Error cloning LazyVim starter: {e}")
+        print(Fore.RED + f"stderr: {e.stderr}")
+        return
+    except FileNotFoundError:
+        print(Fore.RED + "Error: git command not found. Please install git first.")
+        return
+
+    # Remove .git folder
+    git_path = os.path.join(config_path, ".git")
+    if os.path.exists(git_path):
+        try:
+            shutil.rmtree(git_path)
+            print(Fore.CYAN + "✓ Removed .git folder from ~/.config/nvim")
+        except Exception as e:
+            print(Fore.YELLOW + f"Warning: Could not remove .git folder: {e}")
+
+    print()
+    print(Fore.GREEN + "LazyVim installation completed!")
+    print(Fore.CYAN + "You can now start Neovim with: nvim")
+
 def handle_legacy_commands(args):
     """Handle all the legacy positional argument commands"""
     if args.base64:
@@ -365,6 +476,17 @@ def main():
         else:
             init_directory_structure()
         return
+
+    # Check if "add" is the first argument (after script name)
+    if len(sys.argv) > 1 and sys.argv[1] == "add":
+        # Handle add command
+        if len(sys.argv) > 2 and sys.argv[2] == "nv":
+            anakin_logo()
+            install_lazyvim()
+            return
+        else:
+            print(Fore.RED + "Error: Unknown add command. Use 'anakin add nv' to install LazyVim.")
+            return
 
     # Legacy command handling - use the original parser
     parser = argparse.ArgumentParser(description="Anakin Command Line Utility", formatter_class=argparse.RawTextHelpFormatter)
